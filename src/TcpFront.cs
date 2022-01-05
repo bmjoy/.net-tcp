@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 
@@ -11,7 +12,7 @@ namespace Zeloot.Tcp
 
         private delegate void MainEvent(TcpFront front);
         private delegate void MessageEvent(TcpFront front, byte[] data);
-
+        private byte[] buffer;
         private event MainEvent OnOpenEvent;
         private event MainEvent OnCloseEvent;
         private event MessageEvent OnMessageEvent;
@@ -45,9 +46,7 @@ namespace Zeloot.Tcp
         {
             try
             {
-                socket.Bind(host);
-                socket.Listen(backlog);
-                socket.BeginAccept(Accept, null);
+                socket.BeginConnect(host, Connect, null);
                 error = false;
             }
             catch
@@ -56,9 +55,16 @@ namespace Zeloot.Tcp
             }
         }
 
-        private void Accept(IAsyncResult result)
+        private void Connect(IAsyncResult result)
         {
-            var client = socket.EndAccept(result);
+            socket.EndConnect(result);
+            OnOpenEvent?.Invoke(this);
+            socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, Receive, null);
+        }
+
+        private void Receive(IAsyncResult result)
+        {
+
         }
     }
 }
