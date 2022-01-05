@@ -10,8 +10,8 @@ namespace Zeloot.Tcp
         public Socket socket { get; private set; }
         public IPEndPoint host { get; private set; }
 
-        private delegate void MainEvent(TcpFront front);
-        private delegate void MessageEvent(TcpFront front, byte[] data);
+        private delegate void MainEvent();
+        private delegate void MessageEvent(byte[] data);
         private byte[] buffer;
         private event MainEvent OnOpenEvent;
         private event MainEvent OnCloseEvent;
@@ -42,6 +42,31 @@ namespace Zeloot.Tcp
             return new TcpFront(ref _host, ref socket);
         }
 
+        public void OnOpen(Action action)
+        {
+            OnOpenEvent += () =>
+            {
+                action?.Invoke();
+            };
+        }
+
+        public void OnClose(Action action)
+        {
+            OnCloseEvent += () =>
+            {
+                action?.Invoke();
+            };
+        }
+
+        public void OnReceive(Action<byte[]> action)
+        {
+            OnMessageEvent += (data) =>
+            {
+                action?.Invoke(data);
+            };
+        }
+
+
         public void Open(out bool error, int backlog = 0)
         {
             try
@@ -58,8 +83,24 @@ namespace Zeloot.Tcp
         private void Connect(IAsyncResult result)
         {
             socket.EndConnect(result);
-            OnOpenEvent?.Invoke(this);
-            socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, Receive, null);
+
+            if (!socket.Connected) OnCloseEvent?.Invoke();
+
+            OnOpenEvent?.Invoke();
+            BeginReceive();
+
+        }
+
+        private void BeginReceive()
+        {
+            try
+            {
+                socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, Receive, null);
+            }
+            catch
+            {
+
+            }
         }
 
         private void Receive(IAsyncResult result)
