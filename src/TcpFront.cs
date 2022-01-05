@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace Zeloot.Tcp
 {
@@ -40,6 +41,16 @@ namespace Zeloot.Tcp
         {
             var _host = new IPEndPoint(IPAddress.Parse(ip), port);
             return new TcpFront(ref _host, ref socket);
+        }
+
+        public static string Decode(byte[] data)
+        {
+            return Encoding.UTF8.GetString(data);
+        }
+
+        public static byte[] Encode(string data)
+        {
+            return Encoding.UTF8.GetBytes(data);
         }
 
         public void OnOpen(Action action)
