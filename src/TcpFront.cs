@@ -198,6 +198,11 @@ namespace Zeloot.Tcp
                     OnReceiveEvent?.Invoke(data);
                     BeginReceive();
                 }
+                else
+                {
+                    if (IsConnected) BeginReceive();
+                    else Close();
+                }
             }
             catch
             {
