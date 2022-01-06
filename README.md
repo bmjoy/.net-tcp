@@ -16,7 +16,7 @@ TCP connection framework for unity
 Using Zeloot.Tcp;
 Using UnityEngine;
 
-public class Example
+public class Example : MonoBehaviour
 {    
     private void Start()
     {
