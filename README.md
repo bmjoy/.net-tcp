@@ -38,6 +38,18 @@ work    :  Used for close connection.
 front.Close();
 ```
 
+> - Send / SendAsync
+```
+work    :  Used for send message or data.
+param.1 :  Accept, string or array of bytes
+```
+```csharp
+front.Send("message");
+front.SendAsync("message");
+front.Send(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+front.SendAsync(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+```
+
 <br>
 
 > Example
