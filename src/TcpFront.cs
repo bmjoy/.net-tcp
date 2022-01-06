@@ -128,7 +128,11 @@ namespace Zeloot.Tcp
             }
             catch
             {
-                if (IsConnected) BeginReceive();
+                if (IsConnected)
+                {
+                    BeginReceive();
+                    SendAsync(data);
+                }
                 else Close();
             }
         }
@@ -141,7 +145,11 @@ namespace Zeloot.Tcp
             }
             catch
             {
-                if (IsConnected) BeginReceive();
+                if (IsConnected)
+                {
+                    BeginReceive();
+                    SendAsync(data);
+                }
                 else Close();
             }
         }
