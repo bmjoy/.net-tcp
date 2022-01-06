@@ -32,8 +32,13 @@ public class Example
         client.OnOpen(() => 
         {
             print("Connected");
-            client.Send("Hello, Is Internal Thread");
-            client.SendAsync("Hello, External Thread");
+            var message = "Hello, ";
+            client.Send(message + "Is Internal Thread (Main Thread)");
+            client.SendAsync(message + "Is External Thread (Multi Thread)");
+            
+            var bytes = byte[] { 10, 20, 30, 40, 50 }
+            client.Send(bytes);
+            client.SendAsync(bytes);
         });
         
         client.OnReceive((data) => 
