@@ -36,7 +36,7 @@ public class Example
             client.Send(message + "Is Internal Thread (Main Thread)");
             client.SendAsync(message + "Is External Thread (Multi Thread)");
             
-            var bytes = byte[] { 10, 20, 30, 40, 50 }
+            var bytes = new byte[] { 10, 20, 30, 40, 50 };
             client.Send(bytes);
             client.SendAsync(bytes);
         });
