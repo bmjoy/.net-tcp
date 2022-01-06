@@ -23,15 +23,21 @@ public class Example
         var client = TcpFront.Init("127.0.0.1", 8080);
         client.Open();
         
-        client.OnOpen(() => {
+        client.OnOpen(() => 
+        {
             print("Connected");
+            client.Send("Hello, Is Internal Thread");
+            client.SendAsync("Hello, External Thread");
         });
         
-        client.OnReceive((data), => {
+        client.OnReceive((data), => 
+        {
             print("Receive: " + TcpFront.Decode(data));
+            client.Close();
         });
         
-        client.OnClose(() => {
+        client.OnClose(() => 
+        {
             print("Closed");
         });
     }
