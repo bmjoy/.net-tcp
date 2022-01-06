@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Zeloot.Tcp
 {
@@ -78,17 +79,21 @@ namespace Zeloot.Tcp
         }
 
 
-        public void Open(out bool error, int backlog = 0)
+        public void Open(out bool error, int timeout = 1000)
         {
+            error = true;
+
             try
             {
-                socket.BeginConnect(host, Connect, null);
-                error = false;
+                try
+                {
+                    var result = socket.BeginConnect(host, Connect, null);
+                    result.AsyncWaitHandle.WaitOne(timeout, true);
+                    error = !socket.Connected;
+                }
+                catch { }
             }
-            catch
-            {
-                error = true;
-            }
+            catch { }
         }
 
         private void Connect(IAsyncResult result)
