@@ -12,6 +12,49 @@ TCP connection framework for unity
 ## Examples
 
 > ### TcpFront (Client)
+> - Example 1
+```csharp
+Using Zeloot.Tcp;
+Using UnityEngine;
+
+public class Example : MonoBehaviour
+{   
+    private TcpFront client;
+    
+    private void Start()
+    {
+        client.Open(out var error);
+        
+        if(!error)
+        {
+            client.OnOpen(Open);
+            client.OnReceive(Receive);
+            client.Close(Close);
+        }
+        else
+        {
+            print("Error");
+        }
+    }
+    
+    private void Open()
+    {
+        print("Open");
+    }
+    
+    private void Receive(byte[] data)
+    {
+        print("Receive: " + TcpFront.Decode(data));
+    }
+    
+    private void Close()
+    {
+        print("Close");
+    }
+}
+```
+
+> - Example 2
 ```csharp
 Using Zeloot.Tcp;
 Using UnityEngine;
