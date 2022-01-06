@@ -21,7 +21,13 @@ public class Example
     private void Start()
     {
         var client = TcpFront.Init("127.0.0.1", 8080);
-        client.Open();
+        
+        client.Open(out bool error);
+        
+        if(error)
+        {
+            print("Error On Connect");
+        }
         
         client.OnOpen(() => 
         {
