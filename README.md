@@ -17,14 +17,14 @@ Using Zeloot.Tcp;
 client = TcpFront.Init(ip, port);
 ```
 
-> Methods
+> ## Methods
 <br>
 
 > - Open
 ```
 work    :  Used for open connection.
 param.1 :  bool error  | Return true if have error and false if not have error.
-param.2 :  int timeout | Is max-time for try open connection [Default: 1000 ~ 1s] 
+param.2 :  int timeout | Is max-time for try open connection [Default: 1000 ~ 1s].
 ```
 ```csharp
 front.Open();
@@ -48,6 +48,51 @@ front.Send("message");
 front.SendAsync("message");
 front.Send(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 front.SendAsync(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+```
+
+> ## Events
+<br>
+
+> ### OnOpen / OnClose
+```
+work    :  Used for receive events.
+param.1 :  Accept, Action 'System.Action'.
+```
+> Using lambda
+```csharp
+front.OnOpen(() => {
+    Debug.Log("On Open");
+});
+
+front.OnClose(() => {
+    Debug.Log("On Close");
+});
+```
+> Using function
+```csharp
+front.OnOpen(MyOnOpen);
+front.OnClose(MyOnClose);
+
+void MyOnOpen() { Debug.Log("My On Open"); }
+void MyOnClose() { Debug.Log("My On Close"); }
+```
+
+> ### OnReceive
+```
+work    :  Used for receive events.
+param.1 :  Accept, Action<byte[]> 'System.Action'.
+```
+> Using lambda
+```csharp
+front.OnReceive((data) => {
+    Debug.Log("On Receive: " + TcpFront.Decode(data));
+});
+```
+> Using function
+```csharp
+front.OnReceive(MyOnReceive);
+
+void MyOnReceive(byte[] data) { Debug.Log("My On Open: " + TcpFront.Decode(data));
 ```
 
 <br>
