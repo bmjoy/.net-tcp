@@ -17,13 +17,16 @@ namespace Zeloot.Tcp
         private byte[] buffer;
         private event MainEvent OnOpenEvent;
         private event MainEvent OnCloseEvent;
-        private event MessageEvent OnMessageEvent;
+        private event MessageEvent OnReceiveEvent;
+        private bool closed;
 
         private TcpFront(ref IPEndPoint host, ref Socket socket)
         {
             if (socket == null) socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket = socket;
             this.host = host;
+            this.closed = false;
+            this.buffer = new byte[1024 * 8];
         }
 
         public static TcpFront Init(IPEndPoint host, Socket socket = null)
@@ -54,6 +57,15 @@ namespace Zeloot.Tcp
             return Encoding.UTF8.GetBytes(data);
         }
 
+        public static bool Connected(TcpFront front, SelectMode mode = SelectMode.SelectRead, int timeout = 5000)
+        {
+            if (front == null || front.socket == null || !front.socket.Connected) return false;
+            try { return !(front.socket.Poll(timeout, mode) && front.socket.Available == 0); }
+            catch { return false; }
+        }
+
+        public bool IsConnected => Connected(this);
+
         public void OnOpen(Action action)
         {
             OnOpenEvent += () =>
@@ -72,7 +84,7 @@ namespace Zeloot.Tcp
 
         public void OnReceive(Action<byte[]> action)
         {
-            OnMessageEvent += (data) =>
+            OnReceiveEvent += (data) =>
             {
                 action?.Invoke(data);
             };
@@ -81,6 +93,8 @@ namespace Zeloot.Tcp
 
         public void Open(out bool error, int timeout = 1000)
         {
+            if (IsConnected) throw new Exception("server is running");
+
             error = true;
 
             try
@@ -89,22 +103,61 @@ namespace Zeloot.Tcp
                 {
                     var result = socket.BeginConnect(host, Connect, null);
                     result.AsyncWaitHandle.WaitOne(timeout, true);
-                    error = !socket.Connected;
+                    error = !IsConnected;
                 }
                 catch { }
             }
             catch { }
         }
 
+        public void Send(string data)
+        {
+            Send(Encode(data));
+        }
+
+        public void SendAsync(string data)
+        {
+            SendAsync(Encode(data));
+        }
+
+        public void Send(byte[] data)
+        {
+            try
+            {
+                socket.Send(data, 0, data.Length, SocketFlags.None);
+            }
+            catch
+            {
+                if (IsConnected) BeginReceive();
+                else Close();
+            }
+        }
+
+        public void SendAsync(byte[] data)
+        {
+            try
+            {
+                socket.BeginSend(data, 0, data.Length, SocketFlags.None, null, null);
+            }
+            catch
+            {
+                if (IsConnected) BeginReceive();
+                else Close();
+            }
+        }
+
         private void Connect(IAsyncResult result)
         {
             socket.EndConnect(result);
 
-            if (!socket.Connected) OnCloseEvent?.Invoke();
+            if (!IsConnected)
+            {
+                OnCloseEvent?.Invoke();
+                return;
+            }
 
             OnOpenEvent?.Invoke();
             BeginReceive();
-
         }
 
         private void BeginReceive()
@@ -115,13 +168,42 @@ namespace Zeloot.Tcp
             }
             catch
             {
+                if (IsConnected) BeginReceive();
+                else Close();
+            }
 
+        }
+
+        public void Close()
+        {
+            if (IsConnected || !closed)
+            {
+                socket?.Close();
+                OnCloseEvent?.Invoke();
+                closed = true;
             }
         }
 
+
         private void Receive(IAsyncResult result)
         {
+            try
+            {
+                var size = socket.EndReceive(result);
 
+                if (size > 0)
+                {
+                    var data = new byte[size];
+                    Array.Copy(buffer, data, size);
+                    OnReceiveEvent?.Invoke(data);
+                    BeginReceive();
+                }
+            }
+            catch
+            {
+                if (IsConnected) BeginReceive();
+                else Close();
+            }
         }
     }
 }
