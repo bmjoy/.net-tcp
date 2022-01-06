@@ -33,7 +33,7 @@ public class Example : MonoBehaviour
         
             //preview - in progress
             /*
-            client.on("EnterPlayer", EnterPlater);
+            client.on("EnterPlayer", EnterPlayer);
             client.emit("ExitPlayer", "[{object}, {json}, {here}]");
             */
         }
