@@ -44,7 +44,11 @@ public class Example : MonoBehaviour
         client.OnReceive((data) => 
         {
             print("Receive: " + TcpFront.Decode(data));
-            client.Close();
+            
+            if(client.IsConnected)
+            {
+                client.Close();
+            }
         });
         
         client.OnClose(() => 
