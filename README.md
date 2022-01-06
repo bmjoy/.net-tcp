@@ -23,7 +23,7 @@ public class Example : MonoBehaviour
     
     private void Start()
     {
-        client.Open(out var error);
+        client.Open(out bool error);
         
         if(!error)
         {
