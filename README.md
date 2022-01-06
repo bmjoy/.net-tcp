@@ -20,6 +20,18 @@ client = TcpFront.Init(ip, port);
 > ## Methods
 <br>
 
+> - Init
+```
+work    :  Used for init TcpFront.
+param.1 :  <IPEndPoint host, [?] Socket socket>
+param.2 :  <string ip, int port, [?] Socket socket>
+param.3 :  <IPAddress address, int port, [?] Socket socket>
+param.4 :  <TcpFront front, [?] Socket socket>
+```
+```csharp
+TcpFront front = TcpFront.Init("127.0.0.1", 8080);
+```
+
 > - Open
 ```
 work    :  Used for open connection.
