@@ -8,3 +8,32 @@ TCP connection framework for unity
 
 > ## TcpBack
 > - [Docs of TcpBack or TcpServer](TcpBack.md)
+
+## Examples
+
+> ### TcpFront (Client)
+```csharp
+Using Zeloot.Tcp;
+Using UnityEngine;
+
+public class Example
+{    
+    private void Start()
+    {
+        var client = TcpFront.Init("127.0.0.1", 8080);
+        client.Open();
+        
+        client.OnOpen(() => {
+            print("Connected");
+        });
+        
+        client.OnReceive((data), => {
+            print("Receive: " + TcpFront.Decode(data));
+        });
+        
+        client.OnClose(() => {
+            print("Closed");
+        });
+    }
+}
+```
