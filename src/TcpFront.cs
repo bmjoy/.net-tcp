@@ -47,6 +47,13 @@ namespace Zeloot.Tcp
             return new TcpFront(ref _host, ref socket);
         }
 
+        public static TcpFront Init(TcpFront front, Socket socket = null)
+        {
+            var _host = new IPEndPoint(front.host.Address, front.host.Port);
+            return new TcpFront(ref _host, ref socket);
+        }
+
+
         public static string Decode(byte[] data)
         {
             return Encoding.UTF8.GetString(data);
