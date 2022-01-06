@@ -30,6 +30,12 @@ public class Example : MonoBehaviour
             client.OnOpen(Open);
             client.OnReceive(Receive);
             client.Close(Close);
+        
+            //release
+            /*
+            client.on("EnterPlayer", EnterPlater);
+            client.emit("ExitPlayer", "[{object}, {json}, {here}]");
+            */
         }
         else
         {
