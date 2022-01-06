@@ -30,7 +30,7 @@ public class Example
             client.SendAsync("Hello, External Thread");
         });
         
-        client.OnReceive((data), => 
+        client.OnReceive((data) => 
         {
             print("Receive: " + TcpFront.Decode(data));
             client.Close();
