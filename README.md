@@ -31,7 +31,7 @@ public class Example : MonoBehaviour
             client.OnReceive(Receive);
             client.Close(Close);
         
-            //release
+            //preview - in progress
             /*
             client.on("EnterPlayer", EnterPlater);
             client.emit("ExitPlayer", "[{object}, {json}, {here}]");
