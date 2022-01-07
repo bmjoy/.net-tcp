@@ -6,48 +6,48 @@ using System.Text;
 
 namespace Zeloot.Tcp
 {
-    public class TcpBack
+    public class TcpServer
     {
         public IPEndPoint host { get; private set; }
         public Socket socket { get; private set; }
         public bool IsListen { get; private set; }
-        public List<TcpAgent> agents { get; private set; }
+        public List<TcpServerAgent> agents { get; private set; }
         private event TcpEvent.Open OnOpenEvent;
         private event TcpEvent.Close OnCloseEvent;
         private event TcpEvent.Receive OnReceiveEvent;
 
 
-        private TcpBack(IPEndPoint host, Socket socket)
+        private TcpServer(IPEndPoint host, Socket socket)
         {
             if (socket == null) socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket = socket;
             this.host = host;
-            this.agents = new List<TcpAgent>();
+            this.agents = new List<TcpServerAgent>();
             this.IsListen = false;
         }
 
-        public static TcpBack Init(IPEndPoint host, Socket socket = null)
+        public static TcpServer Init(IPEndPoint host, Socket socket = null)
         {
             var _host = host;
-            return new TcpBack(_host, socket);
+            return new TcpServer(_host, socket);
         }
 
-        public static TcpBack Init(IPAddress ip, int port, Socket socket = null)
+        public static TcpServer Init(IPAddress ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(ip, port);
-            return new TcpBack(_host, socket);
+            return new TcpServer(_host, socket);
         }
 
-        public static TcpBack Init(string ip, int port, Socket socket = null)
+        public static TcpServer Init(string ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(IPAddress.Parse(ip), port);
-            return new TcpBack(_host, socket);
+            return new TcpServer(_host, socket);
         }
 
-        public static TcpBack Init(TcpBack back, Socket socket = null)
+        public static TcpServer Init(TcpServer back, Socket socket = null)
         {
             var _host = new IPEndPoint(back.host.Address, back.host.Port);
-            return new TcpBack(_host, socket);
+            return new TcpServer(_host, socket);
         }
 
         public bool Open(int backlog = 1)
@@ -57,7 +57,7 @@ namespace Zeloot.Tcp
                 socket.Bind(host);
                 socket.Listen(backlog);
                 socket.BeginAccept(Accept, null);
-                TcpThread.New();
+                Zeloot.Tcp.MainThread.New();
                 IsListen = true;
             }
             catch
@@ -86,7 +86,7 @@ namespace Zeloot.Tcp
 
         private void Accept(IAsyncResult result)
         {
-            var agent = new TcpAgent(socket.EndAccept(result));
+            var agent = new TcpServerAgent(socket.EndAccept(result));
             agent.OnOpen += OnOpenEvent;
             agent.OnClose += OnCloseEvent;
             agent.OnReceive += OnReceiveEvent;
@@ -95,33 +95,33 @@ namespace Zeloot.Tcp
             socket.BeginAccept(Accept, null);
         }
 
-        public void OnOpen(Action<TcpAgent> action)
+        public void OnOpen(Action<TcpServerAgent> action)
         {
             OnOpenEvent += (agent) =>
             {
-                TcpThread.Instance?.Add(() =>
+                Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(agent);
                 });
             };
         }
 
-        public void OnClose(Action<TcpAgent> action)
+        public void OnClose(Action<TcpServerAgent> action)
         {
             OnCloseEvent += (agent) =>
             {
-                TcpThread.Instance?.Add(() =>
+                Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(agent);
                 });
             };
         }
 
-        public void OnReceive(Action<TcpAgent, byte[]> action)
+        public void OnReceive(Action<TcpServerAgent, byte[]> action)
         {
             OnReceiveEvent += (agent, data) =>
             {
-                TcpThread.Instance?.Add(() =>
+                Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(agent, data);
                 });

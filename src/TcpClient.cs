@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Zeloot.Tcp
 {
-    public class TcpFront
+    public class TcpClient
     {
         public Socket socket { get; private set; }
         public IPEndPoint host { get; private set; }
@@ -19,7 +19,7 @@ namespace Zeloot.Tcp
         private event MessageEvent OnReceiveEvent;
         private bool closed;
 
-        private TcpFront(IPEndPoint host, Socket socket)
+        private TcpClient(IPEndPoint host, Socket socket)
         {
             if (socket == null) socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket = socket;
@@ -28,31 +28,31 @@ namespace Zeloot.Tcp
             this.buffer = new byte[1024 * 8];
         }
 
-        public static TcpFront Init(IPEndPoint host, Socket socket = null)
+        public static TcpClient Init(IPEndPoint host, Socket socket = null)
         {
             var _host = host;
-            return new TcpFront(_host, socket);
+            return new TcpClient(_host, socket);
         }
 
-        public static TcpFront Init(IPAddress ip, int port, Socket socket = null)
+        public static TcpClient Init(IPAddress ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(ip, port);
-            return new TcpFront(_host, socket);
+            return new TcpClient(_host, socket);
         }
 
-        public static TcpFront Init(string ip, int port, Socket socket = null)
+        public static TcpClient Init(string ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(IPAddress.Parse(ip), port);
-            return new TcpFront(_host, socket);
+            return new TcpClient(_host, socket);
         }
 
-        public static TcpFront Init(TcpFront front, Socket socket = null)
+        public static TcpClient Init(TcpClient front, Socket socket = null)
         {
             var _host = new IPEndPoint(front.host.Address, front.host.Port);
-            return new TcpFront(_host, socket);
+            return new TcpClient(_host, socket);
         }
 
-        public static bool Connected(TcpFront front, SelectMode mode = SelectMode.SelectRead, int timeout = 5000)
+        public static bool Connected(TcpClient front, SelectMode mode = SelectMode.SelectRead, int timeout = 5000)
         {
             if (front == null || front.socket == null || !front.socket.Connected) return false;
             try { return !(front.socket.Poll(timeout, mode) && front.socket.Available == 0); }
@@ -65,7 +65,7 @@ namespace Zeloot.Tcp
         {
             OnOpenEvent += () =>
             {
-                TcpThread.Instance?.Add(() =>
+                Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke();
                 });
@@ -76,7 +76,7 @@ namespace Zeloot.Tcp
         {
             OnCloseEvent += () =>
             {
-                TcpThread.Instance?.Add(() =>
+                Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke();
                 });
@@ -87,7 +87,7 @@ namespace Zeloot.Tcp
         {
             OnReceiveEvent += (data) =>
             {
-                TcpThread.Instance?.Add(() =>
+                Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(data);
                 });
@@ -105,7 +105,7 @@ namespace Zeloot.Tcp
                 if (!socket.Connected) return false;
                 OnOpenEvent?.Invoke();
                 BeginReceive();
-                TcpThread.New();
+                Zeloot.Tcp.MainThread.New();
                 return true;
 
             }

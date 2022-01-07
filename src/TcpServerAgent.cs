@@ -4,7 +4,7 @@ using System.Net.Sockets;
 
 namespace Zeloot.Tcp
 {
-    public class TcpAgent
+    public class TcpServerAgent
     {
         public Socket socket { get; private set; }
         public bool init { get; private set; }
@@ -25,7 +25,7 @@ namespace Zeloot.Tcp
             }
         }
 
-        public TcpAgent(Socket socket)
+        public TcpServerAgent(Socket socket)
         {
             this.socket = socket;
             this.buffer = new byte[bufferSize];
