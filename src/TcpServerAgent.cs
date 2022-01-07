@@ -109,6 +109,10 @@ namespace Zeloot.Tcp
                     Array.Copy(buffer, data, size);
                     OnReceive?.Invoke(this, data);
                 }
+                else
+                {
+                    ErrorOnReceive();
+                }
             }
             catch
             {
