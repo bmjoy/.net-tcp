@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Zeloot.Tcp
 {
@@ -53,17 +51,6 @@ namespace Zeloot.Tcp
             return new TcpFront(ref _host, ref socket);
         }
 
-
-        public static string Decode(byte[] data)
-        {
-            return Encoding.UTF8.GetString(data);
-        }
-
-        public static byte[] Encode(string data)
-        {
-            return Encoding.UTF8.GetBytes(data);
-        }
-
         public static bool Connected(TcpFront front, SelectMode mode = SelectMode.SelectRead, int timeout = 5000)
         {
             if (front == null || front.socket == null || !front.socket.Connected) return false;
@@ -100,7 +87,7 @@ namespace Zeloot.Tcp
 
         public void Open(out bool error, int timeout = 1000)
         {
-            if (IsConnected) throw new Exception("server is running");
+            if (IsConnected) throw new Exception("client is running");
 
             error = true;
 
@@ -119,12 +106,12 @@ namespace Zeloot.Tcp
 
         public void Send(string data)
         {
-            Send(Encode(data));
+            Send(TcpMain.Encode(data));
         }
 
         public void SendAsync(string data)
         {
-            SendAsync(Encode(data));
+            SendAsync(TcpMain.Encode(data));
         }
 
         public void Send(byte[] data)
