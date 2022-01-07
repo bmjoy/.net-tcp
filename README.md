@@ -11,44 +11,90 @@ TCP connection framework for unity
 
 ## Examples
 
-> ### TcpFrontIO (Client)
+> ### TcpClient & TcpServer
 > - Example 1
 ```csharp
 using UnityEngine;
 using Zeloot.Tcp;
 
-public class Example : MonoBehaviour
+public class TcpTest : MonoBehaviour
 {
-    private TcpFrontIO io;
-
     private void Start()
     {
-        io.open("127.0.0.1", 3000);
+        Server();
+        Client();
+    }
 
-        io.on("open", (data) =>
-        {
-            io.emit("open", "{'id':1000, 'name':'zeloot', 'version':'1.0.0'}");
-            print("open: " + data.text);
-        });
+    private void Server()
+    {
+        var server = TcpServer.Init("127.0.0.1", 7070);
+        var open = server.Open();
 
-        io.on("close", (data) =>
+        if (open)
         {
-            print("close: " + data.text);
-        });
+            print("[SERVER] listen success on: " + server.host);
 
-        io.on("ping", (data) =>
-        {
-            io.emit("pong", "");
-            print("ping: " + data.text);
-        });
+            server.OnOpen((agent) =>
+            {
+                print("[SERVER] client open.");
+                agent.Send("Hello client");
+                //agent.Close();
+            });
 
-        io.on("pong", (data) =>
+            server.OnClose((agent) =>
+            {
+                print("[SERVER] client close.");
+            });
+
+            server.OnReceive((agent, data) =>
+            {
+                agent.Send(":?close");
+                print("[SERVER] receive from client [" + agent.socket.RemoteEndPoint + "] data: " + TcpMain.Decode(data));
+            });
+        }
+        else
         {
-            io.emit("ping", "");
-            print("pong: " + data.text);
-        });
+            print("[SERVER] listen error on: " + server.host);
+        }
+    }
+
+    private void Client()
+    {
+        var client = TcpClient.Init("127.0.0.1", 7070);
+        var open = client.Open();
+
+        if (open)
+        {
+            print("[CLIENT] open success");
+
+            client.OnOpen(() =>
+            {
+                print("[CLIENT] open.");
+            });
+
+            client.OnClose(() =>
+            {
+                print("[CLIENT] close.");
+            });
+
+            client.OnReceive((data) =>
+            {
+                print("[CLIENT] receive: " + TcpMain.Decode(data));
+
+                if (TcpMain.Decode(data).Trim().ToUpper() == ":?close".Trim().ToUpper())
+                    client.Close();
+                else
+                    client.Send("Hello server");
+
+            });
+        }
+        else
+        {
+            print("[CLIENT] open error");
+        }
     }
 }
+
 ```
 <br>
 
