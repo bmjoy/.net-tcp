@@ -11,6 +11,47 @@ TCP connection framework for unity
 
 ## Examples
 
+> ### TcpFrontIO (Client)
+> - Example 1
+```
+using UnityEngine;
+using Zeloot.Tcp;
+
+public class Example : MonoBehaviour
+{
+    private TcpFrontIO io;
+
+    private void Start()
+    {
+        io.open("127.0.0.1", 3000);
+
+        io.on("open", (data) =>
+        {
+            io.emit("open", "{'id':1000, 'name':'zeloot', 'version':'1.0.0'}");
+            print("open: " + data.text);
+        });
+
+        io.on("close", (data) =>
+        {
+            print("close: " + data.text);
+        });
+
+        io.on("ping", (data) =>
+        {
+            io.emit("pong", "");
+            print("ping: " + data.text);
+        });
+
+        io.on("pong", (data) =>
+        {
+            io.emit("ping", "");
+            print("pong: " + data.text);
+        });
+    }
+}
+```
+<br>
+
 > ### TcpFront (Client)
 > - Example 1
 ```csharp
