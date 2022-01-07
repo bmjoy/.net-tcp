@@ -22,14 +22,14 @@
 <br>
 
 > ### Geral
-> - [Doc NetTcpMain](.md)
+> - [Doc NetTcpMain](doc/NetTcpMain.md)
 
 > ### Client
-> - [Doc NetTcpClient](.md)
+> - [Doc NetTcpClient](doc/NetTcpClient.md)
 
 > ### Server
-> - [Doc NetTcpServer](.md)
-> - [Doc NetTcpServerAgent](.md)
+> - [Doc NetTcpServer](doc/NetTcpServer.md)
+> - [Doc NetTcpServerAgent](doc/NetTcpServerAgent.md)
 <br>
 
 > ## Examples
