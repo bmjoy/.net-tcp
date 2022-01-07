@@ -13,7 +13,7 @@ TCP connection framework for unity
 
 > ### TcpFrontIO (Client)
 > - Example 1
-```
+```csharp
 using UnityEngine;
 using Zeloot.Tcp;
 
