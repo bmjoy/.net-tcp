@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Zeloot.Tcp
 {
-    public class TcpMain
+    public class NetTcpMain
     {
         public static string Decode(byte[] data)
         {

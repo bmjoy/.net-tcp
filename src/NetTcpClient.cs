@@ -4,7 +4,7 @@ using System.Net.Sockets;
 
 namespace Zeloot.Tcp
 {
-    public class TcpClient
+    public class NetTcpClient
     {
         public Socket socket { get; private set; }
         public IPEndPoint host { get; private set; }
@@ -17,7 +17,7 @@ namespace Zeloot.Tcp
         private event MessageEvent OnReceiveEvent;
         private bool closed;
 
-        private TcpClient(IPEndPoint host, Socket socket)
+        private NetTcpClient(IPEndPoint host, Socket socket)
         {
             if (socket == null) socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket = socket;
@@ -26,31 +26,31 @@ namespace Zeloot.Tcp
             this.buffer = new byte[1024 * 8];
         }
 
-        public static TcpClient Init(IPEndPoint host, Socket socket = null)
+        public static NetTcpClient Init(IPEndPoint host, Socket socket = null)
         {
             var _host = host;
-            return new TcpClient(_host, socket);
+            return new NetTcpClient(_host, socket);
         }
 
-        public static TcpClient Init(IPAddress ip, int port, Socket socket = null)
+        public static NetTcpClient Init(IPAddress ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(ip, port);
-            return new TcpClient(_host, socket);
+            return new NetTcpClient(_host, socket);
         }
 
-        public static TcpClient Init(string ip, int port, Socket socket = null)
+        public static NetTcpClient Init(string ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(IPAddress.Parse(ip), port);
-            return new TcpClient(_host, socket);
+            return new NetTcpClient(_host, socket);
         }
 
-        public static TcpClient Init(TcpClient front, Socket socket = null)
+        public static NetTcpClient Init(NetTcpClient front, Socket socket = null)
         {
             var _host = new IPEndPoint(front.host.Address, front.host.Port);
-            return new TcpClient(_host, socket);
+            return new NetTcpClient(_host, socket);
         }
 
-        public static bool Connected(TcpClient front, SelectMode mode = SelectMode.SelectRead, int timeout = 5000)
+        public static bool Connected(NetTcpClient front, SelectMode mode = SelectMode.SelectRead, int timeout = 5000)
         {
             if (front == null || front.socket == null || !front.socket.Connected) return false;
             try { return !(front.socket.Poll(timeout, mode) && front.socket.Available == 0); }
@@ -64,7 +64,7 @@ namespace Zeloot.Tcp
             OnOpenEvent += () =>
             {
 #if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
-                Zeloot.Tcp.MainThread.Instance?.Add(() =>
+                NetMainThread.Instance?.Add(() =>
                 {
                     action?.Invoke();
                 });
@@ -79,7 +79,7 @@ namespace Zeloot.Tcp
             OnCloseEvent += () =>
             {
 #if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
-                Zeloot.Tcp.MainThread.Instance?.Add(() =>
+                NetMainThread.Instance?.Add(() =>
                 {
                     action?.Invoke();
                 });
@@ -94,7 +94,7 @@ namespace Zeloot.Tcp
             OnReceiveEvent += (data) =>
             {
 #if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
-                Zeloot.Tcp.MainThread.Instance?.Add(() =>
+                NetMainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(data);
                 });
@@ -116,7 +116,7 @@ namespace Zeloot.Tcp
                 OnOpenEvent?.Invoke();
                 BeginReceive();
 #if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
-                Zeloot.Tcp.MainThread.New();
+                NetMainThread.New();
 #endif
                 return true;
 
@@ -127,12 +127,12 @@ namespace Zeloot.Tcp
 
         public void Send(string data)
         {
-            Send(TcpMain.Encode(data));
+            Send(NetTcpMain.Encode(data));
         }
 
         public void SendAsync(string data)
         {
-            SendAsync(TcpMain.Encode(data));
+            SendAsync(NetTcpMain.Encode(data));
         }
 
         public void Send(byte[] data)

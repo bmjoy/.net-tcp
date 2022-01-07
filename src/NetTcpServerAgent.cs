@@ -3,15 +3,15 @@ using System.Net.Sockets;
 
 namespace Zeloot.Tcp
 {
-    public class TcpServerAgent
+    public class NetTcpServerAgent
     {
         public Socket socket { get; private set; }
         public bool init { get; private set; }
         public bool closed { get; private set; }
 
-        public event TcpEvent.Open OnOpen;
-        public event TcpEvent.Receive OnReceive;
-        public event TcpEvent.Close OnClose;
+        public event NetTcpEvent.Open OnOpen;
+        public event NetTcpEvent.Receive OnReceive;
+        public event NetTcpEvent.Close OnClose;
         private const int bufferSize = 1024 * 4;
         private byte[] buffer;
 
@@ -24,7 +24,7 @@ namespace Zeloot.Tcp
             }
         }
 
-        public TcpServerAgent(Socket socket)
+        public NetTcpServerAgent(Socket socket)
         {
             this.socket = socket;
             this.buffer = new byte[bufferSize];
@@ -43,12 +43,12 @@ namespace Zeloot.Tcp
         }
         public void Send(string data)
         {
-            Send(TcpMain.Encode(data));
+            Send(NetTcpMain.Encode(data));
         }
 
         public void SendAsync(string data)
         {
-            SendAsync(TcpMain.Encode(data));
+            SendAsync(NetTcpMain.Encode(data));
         }
 
         public void Send(byte[] data)

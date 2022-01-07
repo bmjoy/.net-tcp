@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace Zeloot.Tcp
 {
-    public class MainThread : MonoBehaviour
+    public class NetMainThread : MonoBehaviour
     {
-        public static MainThread Instance;
+        public static NetMainThread Instance;
         private static List<Action> actions;
         public static void New()
         {
             var runtime = new GameObject("[RUNTIME] TcpThread");
-            runtime.AddComponent<MainThread>();
+            runtime.AddComponent<NetMainThread>();
         }
 
         private void Awake()

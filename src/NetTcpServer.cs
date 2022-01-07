@@ -5,48 +5,48 @@ using System.Net.Sockets;
 
 namespace Zeloot.Tcp
 {
-    public class TcpServer
+    public class NetTcpServer
     {
         public IPEndPoint host { get; private set; }
         public Socket socket { get; private set; }
         public bool IsListen { get; private set; }
-        public List<TcpServerAgent> agents { get; private set; }
-        private event TcpEvent.Open OnOpenEvent;
-        private event TcpEvent.Close OnCloseEvent;
-        private event TcpEvent.Receive OnReceiveEvent;
+        public List<NetTcpServerAgent> agents { get; private set; }
+        private event NetTcpEvent.Open OnOpenEvent;
+        private event NetTcpEvent.Close OnCloseEvent;
+        private event NetTcpEvent.Receive OnReceiveEvent;
 
 
-        private TcpServer(IPEndPoint host, Socket socket)
+        private NetTcpServer(IPEndPoint host, Socket socket)
         {
             if (socket == null) socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket = socket;
             this.host = host;
-            this.agents = new List<TcpServerAgent>();
+            this.agents = new List<NetTcpServerAgent>();
             this.IsListen = false;
         }
 
-        public static TcpServer Init(IPEndPoint host, Socket socket = null)
+        public static NetTcpServer Init(IPEndPoint host, Socket socket = null)
         {
             var _host = host;
-            return new TcpServer(_host, socket);
+            return new NetTcpServer(_host, socket);
         }
 
-        public static TcpServer Init(IPAddress ip, int port, Socket socket = null)
+        public static NetTcpServer Init(IPAddress ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(ip, port);
-            return new TcpServer(_host, socket);
+            return new NetTcpServer(_host, socket);
         }
 
-        public static TcpServer Init(string ip, int port, Socket socket = null)
+        public static NetTcpServer Init(string ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(IPAddress.Parse(ip), port);
-            return new TcpServer(_host, socket);
+            return new NetTcpServer(_host, socket);
         }
 
-        public static TcpServer Init(TcpServer back, Socket socket = null)
+        public static NetTcpServer Init(NetTcpServer back, Socket socket = null)
         {
             var _host = new IPEndPoint(back.host.Address, back.host.Port);
-            return new TcpServer(_host, socket);
+            return new NetTcpServer(_host, socket);
         }
 
         public bool Open(int backlog = 1)
@@ -57,7 +57,7 @@ namespace Zeloot.Tcp
                 socket.Listen(backlog);
                 socket.BeginAccept(Accept, null);
 #if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
-                Zeloot.Tcp.MainThread.New();
+                NetMainThread.New();
 #endif
                 IsListen = true;
             }
@@ -87,7 +87,7 @@ namespace Zeloot.Tcp
 
         private void Accept(IAsyncResult result)
         {
-            var agent = new TcpServerAgent(socket.EndAccept(result));
+            var agent = new NetTcpServerAgent(socket.EndAccept(result));
             agent.OnOpen += OnOpenEvent;
             agent.OnClose += OnCloseEvent;
             agent.OnReceive += OnReceiveEvent;
@@ -96,12 +96,12 @@ namespace Zeloot.Tcp
             socket.BeginAccept(Accept, null);
         }
 
-        public void OnOpen(Action<TcpServerAgent> action)
+        public void OnOpen(Action<NetTcpServerAgent> action)
         {
             OnOpenEvent += (agent) =>
             {
 #if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
-                Zeloot.Tcp.MainThread.Instance?.Add(() =>
+                NetMainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(agent);
                 });
@@ -111,12 +111,12 @@ namespace Zeloot.Tcp
             };
         }
 
-        public void OnClose(Action<TcpServerAgent> action)
+        public void OnClose(Action<NetTcpServerAgent> action)
         {
             OnCloseEvent += (agent) =>
             {
 #if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
-                Zeloot.Tcp.MainThread.Instance?.Add(() =>
+                NetMainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(agent);
                 });
@@ -126,12 +126,12 @@ namespace Zeloot.Tcp
             };
         }
 
-        public void OnReceive(Action<TcpServerAgent, byte[]> action)
+        public void OnReceive(Action<NetTcpServerAgent, byte[]> action)
         {
             OnReceiveEvent += (agent, data) =>
             {
 #if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
-                Zeloot.Tcp.MainThread.Instance?.Add(() =>
+                NetMainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(agent, data);
                 });
