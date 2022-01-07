@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace Zeloot.Tcp
 {
@@ -57,7 +56,9 @@ namespace Zeloot.Tcp
                 socket.Bind(host);
                 socket.Listen(backlog);
                 socket.BeginAccept(Accept, null);
+#if UNITY
                 Zeloot.Tcp.MainThread.New();
+#endif
                 IsListen = true;
             }
             catch
@@ -99,10 +100,14 @@ namespace Zeloot.Tcp
         {
             OnOpenEvent += (agent) =>
             {
+#if UNITY
                 Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(agent);
                 });
+#else
+                action?.Invoke(agent);
+#endif
             };
         }
 
@@ -110,10 +115,14 @@ namespace Zeloot.Tcp
         {
             OnCloseEvent += (agent) =>
             {
+#if UNITY
                 Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(agent);
                 });
+#else
+                action?.Invoke(agent);
+#endif
             };
         }
 
@@ -121,10 +130,14 @@ namespace Zeloot.Tcp
         {
             OnReceiveEvent += (agent, data) =>
             {
+#if UNITY
                 Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(agent, data);
                 });
+#else
+                action?.Invoke(agent, data);
+#endif
             };
         }
     }

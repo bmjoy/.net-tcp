@@ -1,8 +1,6 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 
 namespace Zeloot.Tcp
 {
@@ -65,10 +63,15 @@ namespace Zeloot.Tcp
         {
             OnOpenEvent += () =>
             {
+#if UNITY
+
                 Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke();
                 });
+#else
+                action?.Invoke();
+#endif
             };
         }
 
@@ -76,10 +79,15 @@ namespace Zeloot.Tcp
         {
             OnCloseEvent += () =>
             {
+#if UNITY
+
                 Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke();
                 });
+#else
+                action?.Invoke();
+#endif
             };
         }
 
@@ -87,10 +95,14 @@ namespace Zeloot.Tcp
         {
             OnReceiveEvent += (data) =>
             {
+#if UNITY
                 Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(data);
                 });
+#else
+                action?.Invoke(data);
+#endif
             };
         }
 
@@ -105,7 +117,9 @@ namespace Zeloot.Tcp
                 if (!socket.Connected) return false;
                 OnOpenEvent?.Invoke();
                 BeginReceive();
+#if UNITY
                 Zeloot.Tcp.MainThread.New();
+#endif
                 return true;
 
             }
