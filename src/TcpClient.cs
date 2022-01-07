@@ -63,8 +63,7 @@ namespace Zeloot.Tcp
         {
             OnOpenEvent += () =>
             {
-#if UNITY
-
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
                 Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke();
@@ -79,8 +78,7 @@ namespace Zeloot.Tcp
         {
             OnCloseEvent += () =>
             {
-#if UNITY
-
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
                 Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke();
@@ -95,7 +93,7 @@ namespace Zeloot.Tcp
         {
             OnReceiveEvent += (data) =>
             {
-#if UNITY
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
                 Zeloot.Tcp.MainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(data);
@@ -117,7 +115,7 @@ namespace Zeloot.Tcp
                 if (!socket.Connected) return false;
                 OnOpenEvent?.Invoke();
                 BeginReceive();
-#if UNITY
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
                 Zeloot.Tcp.MainThread.New();
 #endif
                 return true;
