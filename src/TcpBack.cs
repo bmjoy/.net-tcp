@@ -17,7 +17,7 @@ namespace Zeloot.Tcp
         private event TcpEvent.Receive OnReceiveEvent;
 
 
-        private TcpBack(ref IPEndPoint host, ref Socket socket)
+        private TcpBack(IPEndPoint host, Socket socket)
         {
             if (socket == null) socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket = socket;
@@ -29,25 +29,25 @@ namespace Zeloot.Tcp
         public static TcpBack Init(IPEndPoint host, Socket socket = null)
         {
             var _host = host;
-            return new TcpBack(ref _host, ref socket);
+            return new TcpBack(_host, socket);
         }
 
         public static TcpBack Init(IPAddress ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(ip, port);
-            return new TcpBack(ref _host, ref socket);
+            return new TcpBack(_host, socket);
         }
 
         public static TcpBack Init(string ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(IPAddress.Parse(ip), port);
-            return new TcpBack(ref _host, ref socket);
+            return new TcpBack(_host, socket);
         }
 
         public static TcpBack Init(TcpBack back, Socket socket = null)
         {
             var _host = new IPEndPoint(back.host.Address, back.host.Port);
-            return new TcpBack(ref _host, ref socket);
+            return new TcpBack(_host, socket);
         }
 
         public bool Open(int backlog = 1)
@@ -57,14 +57,15 @@ namespace Zeloot.Tcp
                 socket.Bind(host);
                 socket.Listen(backlog);
                 socket.BeginAccept(Accept, null);
+                TcpThread.New();
                 IsListen = true;
-                return true;
             }
             catch
             {
                 IsListen = false;
-                return false;
             }
+
+            return IsListen;
         }
 
         public void Close()
@@ -85,8 +86,7 @@ namespace Zeloot.Tcp
 
         private void Accept(IAsyncResult result)
         {
-            var client = socket.EndAccept(result);
-            var agent = new TcpAgent(client);
+            var agent = new TcpAgent(socket.EndAccept(result));
             agent.OnOpen += OnOpenEvent;
             agent.OnClose += OnCloseEvent;
             agent.OnReceive += OnReceiveEvent;
@@ -99,7 +99,10 @@ namespace Zeloot.Tcp
         {
             OnOpenEvent += (agent) =>
             {
-                action?.Invoke(agent);
+                TcpThread.Instance?.Add(() =>
+                {
+                    action?.Invoke(agent);
+                });
             };
         }
 
@@ -107,7 +110,10 @@ namespace Zeloot.Tcp
         {
             OnCloseEvent += (agent) =>
             {
-                action?.Invoke(agent);
+                TcpThread.Instance?.Add(() =>
+                {
+                    action?.Invoke(agent);
+                });
             };
         }
 
@@ -115,7 +121,10 @@ namespace Zeloot.Tcp
         {
             OnReceiveEvent += (agent, data) =>
             {
-                action?.Invoke(agent, data);
+                TcpThread.Instance?.Add(() =>
+                {
+                    action?.Invoke(agent, data);
+                });
             };
         }
     }

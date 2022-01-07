@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace Zeloot.Tcp
 {
@@ -18,7 +19,7 @@ namespace Zeloot.Tcp
         private event MessageEvent OnReceiveEvent;
         private bool closed;
 
-        private TcpFront(ref IPEndPoint host, ref Socket socket)
+        private TcpFront(IPEndPoint host, Socket socket)
         {
             if (socket == null) socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket = socket;
@@ -30,25 +31,25 @@ namespace Zeloot.Tcp
         public static TcpFront Init(IPEndPoint host, Socket socket = null)
         {
             var _host = host;
-            return new TcpFront(ref _host, ref socket);
+            return new TcpFront(_host, socket);
         }
 
         public static TcpFront Init(IPAddress ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(ip, port);
-            return new TcpFront(ref _host, ref socket);
+            return new TcpFront(_host, socket);
         }
 
         public static TcpFront Init(string ip, int port, Socket socket = null)
         {
             var _host = new IPEndPoint(IPAddress.Parse(ip), port);
-            return new TcpFront(ref _host, ref socket);
+            return new TcpFront(_host, socket);
         }
 
         public static TcpFront Init(TcpFront front, Socket socket = null)
         {
             var _host = new IPEndPoint(front.host.Address, front.host.Port);
-            return new TcpFront(ref _host, ref socket);
+            return new TcpFront(_host, socket);
         }
 
         public static bool Connected(TcpFront front, SelectMode mode = SelectMode.SelectRead, int timeout = 5000)
@@ -64,7 +65,10 @@ namespace Zeloot.Tcp
         {
             OnOpenEvent += () =>
             {
-                action?.Invoke();
+                TcpThread.Instance?.Add(() =>
+                {
+                    action?.Invoke();
+                });
             };
         }
 
@@ -72,7 +76,10 @@ namespace Zeloot.Tcp
         {
             OnCloseEvent += () =>
             {
-                action?.Invoke();
+                TcpThread.Instance?.Add(() =>
+                {
+                    action?.Invoke();
+                });
             };
         }
 
@@ -80,28 +87,30 @@ namespace Zeloot.Tcp
         {
             OnReceiveEvent += (data) =>
             {
-                action?.Invoke(data);
+                TcpThread.Instance?.Add(() =>
+                {
+                    action?.Invoke(data);
+                });
             };
         }
 
 
-        public void Open(out bool error, int timeout = 1000)
+        public bool Open()
         {
             if (IsConnected) throw new Exception("client is running");
 
-            error = true;
-
             try
             {
-                try
-                {
-                    var result = socket.BeginConnect(host, Connect, null);
-                    result.AsyncWaitHandle.WaitOne(timeout, true);
-                    error = !IsConnected;
-                }
-                catch { }
+                socket.Connect(host);
+                if (!socket.Connected) return false;
+                OnOpenEvent?.Invoke();
+                BeginReceive();
+                TcpThread.New();
+                return true;
+
             }
-            catch { }
+            catch { return false; }
+
         }
 
         public void Send(string data)
@@ -120,15 +129,7 @@ namespace Zeloot.Tcp
             {
                 socket.Send(data, 0, data.Length, SocketFlags.None);
             }
-            catch
-            {
-                if (IsConnected)
-                {
-                    BeginReceive();
-                    SendAsync(data);
-                }
-                else Close();
-            }
+            catch { ErrorOnSend(data); }
         }
 
         public void SendAsync(byte[] data)
@@ -137,29 +138,7 @@ namespace Zeloot.Tcp
             {
                 socket.BeginSend(data, 0, data.Length, SocketFlags.None, null, null);
             }
-            catch
-            {
-                if (IsConnected)
-                {
-                    BeginReceive();
-                    SendAsync(data);
-                }
-                else Close();
-            }
-        }
-
-        private void Connect(IAsyncResult result)
-        {
-            socket.EndConnect(result);
-
-            if (!IsConnected)
-            {
-                OnCloseEvent?.Invoke();
-                return;
-            }
-
-            OnOpenEvent?.Invoke();
-            BeginReceive();
+            catch { ErrorOnSend(data); }
         }
 
         private void BeginReceive()
@@ -168,12 +147,7 @@ namespace Zeloot.Tcp
             {
                 socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, Receive, null);
             }
-            catch
-            {
-                if (IsConnected) BeginReceive();
-                else Close();
-            }
-
+            catch { ErrorOnReceive(); }
         }
 
         public void Close()
@@ -186,6 +160,20 @@ namespace Zeloot.Tcp
             }
         }
 
+        private void ErrorOnSend(byte[] data)
+        {
+            if (IsConnected)
+            {
+                BeginReceive();
+                SendAsync(data);
+            }
+            else Close();
+        }
+        private void ErrorOnReceive()
+        {
+            if (IsConnected) BeginReceive();
+            else Close();
+        }
 
         private void Receive(IAsyncResult result)
         {
@@ -200,17 +188,9 @@ namespace Zeloot.Tcp
                     OnReceiveEvent?.Invoke(data);
                     BeginReceive();
                 }
-                else
-                {
-                    if (IsConnected) BeginReceive();
-                    else Close();
-                }
+                else { ErrorOnReceive(); }
             }
-            catch
-            {
-                if (IsConnected) BeginReceive();
-                else Close();
-            }
+            catch { ErrorOnReceive(); }
         }
     }
 }
