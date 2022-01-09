@@ -36,12 +36,19 @@ namespace Zeloot.Tcp
             server.Open(backlog);
             if (server.IsListen)
             {
-                OnEvent?.Invoke("open");
+                NetMainThread.Instance?.Add(() =>
+                {
+                    OnEvent?.Invoke("open");
+                });
+
                 streamIOs = new List<NetStreamIO>();
             }
             else
             {
-                OnEvent?.Invoke("close");
+                NetMainThread.Instance?.Add(() =>
+                {
+                    OnEvent?.Invoke("close");
+                });
             }
         }
 
@@ -49,7 +56,13 @@ namespace Zeloot.Tcp
         {
             OnEvent += (_name) =>
             {
-                if (name == _name) action?.Invoke();
+                if (name == _name)
+                {
+                    NetMainThread.Instance?.Add(() =>
+                    {
+                        action?.Invoke();
+                    });
+                }
             };
         }
 
@@ -61,7 +74,11 @@ namespace Zeloot.Tcp
                 {
                     io = new NetStreamIO(agent);
                     streamIOs.Add(io);
-                    action?.Invoke(io);
+
+                    NetMainThread.Instance?.Add(() =>
+                    {
+                        action?.Invoke(io);
+                    });
                 });
             }
         }
@@ -87,6 +104,11 @@ namespace Zeloot.Tcp
         {
             server?.Close();
             streamIOs.Clear();
+
+            NetMainThread.Instance?.Add(() =>
+            {
+                OnEvent?.Invoke("close");
+            });
         }
     }
 }

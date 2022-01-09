@@ -1,55 +1,69 @@
 using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Zeloot.Tcp
 {
-    public class NetStreamIO
+    public class NetStreamClient
     {
-        internal readonly NetTcpServerAgent agent;
-        public readonly string uid;
-        private bool init;
+        public readonly NetTcpClient client;
         internal bool IsConnected
         {
             get
             {
-                if (agent == null || agent.socket == null) return false;
-                return agent.IsConnected;
+                if (client == null || client.socket == null) return false;
+                return client.IsConnected;
             }
         }
 
-        public NetStreamIO(NetTcpServerAgent client)
+        public NetStreamClient(string address, int port, Socket socket = null)
         {
-            this.agent = client;
-            this.init = false;
-            this.uid = Guid.NewGuid().ToString();
+            client = NetTcpClient.Init(address, port);
         }
+
+        public NetStreamClient(IPAddress address, int port, Socket socket = null)
+        {
+            client = NetTcpClient.Init(address, port, socket);
+        }
+
+        public NetStreamClient(IPEndPoint host, Socket socket = null)
+        {
+            client = NetTcpClient.Init(host, socket);
+        }
+
+        public void Open()
+        {
+            client.Open();
+        }
+
+        public void Close()
+        {
+            client?.Close();
+        }
+
         public void On(string name, Action action)
         {
             if (name == null) return;
 
             if (name == "open")
             {
-                agent.OnOpen += (_) =>
+                client.OnOpen(() =>
                 {
                     NetMainThread.Instance?.Add(() =>
                     {
                         action?.Invoke();
                     });
-                };
-
-                NetMainThread.Instance?.Add(() =>
-                {
-                    if (!init) action?.Invoke();
                 });
             }
             else if (name == "close")
             {
-                agent.OnClose += (_) =>
+                client.OnClose(() =>
                 {
                     NetMainThread.Instance?.Add(() =>
                     {
                         action?.Invoke();
                     });
-                };
+                });
             }
         }
 
@@ -57,7 +71,7 @@ namespace Zeloot.Tcp
         {
             if (name == null) return;
 
-            agent.OnReceive += (_, data) =>
+            client.OnReceive((data) =>
             {
                 var buffer = NetTcpMain.NetStream.Decode(name, data);
                 if (buffer == null) return;
@@ -66,18 +80,18 @@ namespace Zeloot.Tcp
                 {
                     action?.Invoke(buffer);
                 });
-            };
+            });
         }
 
         public void Emit(string name, byte[] data, bool async = true)
         {
             if (async)
             {
-                agent.SendAsync(NetTcpMain.NetStream.Encode(name, data));
+                client.SendAsync(NetTcpMain.NetStream.Encode(name, data));
             }
             else
             {
-                agent.Send(NetTcpMain.NetStream.Encode(name, data));
+                client.Send(NetTcpMain.NetStream.Encode(name, data));
             }
         }
 
@@ -85,17 +99,12 @@ namespace Zeloot.Tcp
         {
             if (async)
             {
-                agent.SendAsync(NetTcpMain.NetStream.Encode(name, data));
+                client.SendAsync(NetTcpMain.NetStream.Encode(name, data));
             }
             else
             {
-                agent.Send(NetTcpMain.NetStream.Encode(name, data));
+                client.Send(NetTcpMain.NetStream.Encode(name, data));
             }
-        }
-
-        public void Close()
-        {
-            agent?.Close();
         }
     }
 }

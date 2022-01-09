@@ -26,6 +26,7 @@
 
 > ### Client
 > - [Doc NetTcpClient](doc/NetTcpClient.md)
+> - [Doc NetStreamClient](doc/NetStreamClient.md)
 
 > ### Server
 > - [Doc NetTcpServer](doc/NetTcpServer.md)
