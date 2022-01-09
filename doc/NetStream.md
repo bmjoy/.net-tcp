@@ -35,12 +35,16 @@ public class Example : MonoBehaviour
             io.On("open", () =>
             {
                 print("client connected");
+
+                io.Emit("ping", "message");
+
                 stream.Broadcast("player open", "uid: " + io.uid);
             });
 
             io.On("close", () =>
             {
                 print("client closed");
+
                 stream.Broadcast("player close", "uid: " + io.uid);
             });
 
@@ -51,6 +55,8 @@ public class Example : MonoBehaviour
             
             io.On("close-me", (data) =>     /* my event */
             {
+                io.Emit("ping", new byte[] { 0, 1, 2, 4, 5, 6, 7, 8, 9 });
+                
                 io.Close();
             });
         });

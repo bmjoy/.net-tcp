@@ -9,6 +9,53 @@ Using Zeloot.Tcp;
 
  ## `examples`
 
+
+ > ### Example 2
+````csharp
+
+
+using UnityEngine;
+using Zeloot.Tcp;
+
+public class Example : MonoBehaviour
+{
+    NetStreamClient stream = new NetStreamClient("127.0.0.1", 12000);
+
+    private void Start()
+    {
+        stream.On("open", () =>
+        {
+            print("stream open");        
+        });
+
+        stream.On("close", () =>
+        {
+            print("stream close");
+        });
+
+        stream.On("ping", (data) =>         /* my event */
+        {           
+            print("receive ping: " + NetTcpMain.Decode(data));
+            
+            stream.Emit("pong", "message")    
+        });
+
+        stream.On("pong", (data) =>         /* my event */
+        {
+            print("receive pong: " + NetTcpMain.Decode(data));
+        });
+
+        stream.On("close-me", (data) =>     /* my event */
+        {
+            stream.Emit("ping", new byte[] { 0, 1, 2, 4, 5, 6, 7, 8, 9 });   
+
+            stream.Close();
+        });
+```
+
+
+ > ### Example 2
+
 ```csharp
 using UnityEngine;
 using Zeloot.Tcp;
