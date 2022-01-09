@@ -49,20 +49,30 @@ namespace Zeloot.Tcp
             {
                 client.OnOpen(() =>
                 {
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
+
                     NetMainThread.Instance?.Add(() =>
                     {
                         action?.Invoke();
                     });
+#else
+                        action?.Invoke();
+#endif
                 });
             }
             else if (name == "close")
             {
                 client.OnClose(() =>
                 {
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
+
                     NetMainThread.Instance?.Add(() =>
                     {
                         action?.Invoke();
                     });
+#else
+                        action?.Invoke();
+#endif
                 });
             }
         }
@@ -76,10 +86,15 @@ namespace Zeloot.Tcp
                 var buffer = NetTcpMain.NetStream.Decode(name, data);
                 if (buffer == null) return;
 
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
+
                 NetMainThread.Instance?.Add(() =>
                 {
                     action?.Invoke(buffer);
                 });
+#else
+                    action?.Invoke(buffer);
+#endif
             });
         }
 

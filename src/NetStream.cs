@@ -10,7 +10,6 @@ namespace Zeloot.Tcp
         private delegate void OnEvents(string name);
         private delegate void OnIOEvents(NetStream stream);
         private event OnEvents OnEvent;
-        private event OnEvents OnIOEvent;
         private NetStreamIO io;
         private List<NetStreamIO> streamIOs;
 
@@ -36,19 +35,29 @@ namespace Zeloot.Tcp
             server.Open(backlog);
             if (server.IsListen)
             {
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
+
                 NetMainThread.Instance?.Add(() =>
                 {
                     OnEvent?.Invoke("open");
                 });
+#else
+                    OnEvent?.Invoke("open");
+#endif
 
                 streamIOs = new List<NetStreamIO>();
             }
             else
             {
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
+
                 NetMainThread.Instance?.Add(() =>
                 {
                     OnEvent?.Invoke("close");
                 });
+#else
+                    OnEvent?.Invoke("close");
+#endif
             }
         }
 
@@ -58,10 +67,15 @@ namespace Zeloot.Tcp
             {
                 if (name == _name)
                 {
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
+
                     NetMainThread.Instance?.Add(() =>
                     {
                         action?.Invoke();
                     });
+#else
+                        action?.Invoke();
+#endif
                 }
             };
         }
@@ -74,11 +88,15 @@ namespace Zeloot.Tcp
                 {
                     io = new NetStreamIO(agent);
                     streamIOs.Add(io);
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
 
                     NetMainThread.Instance?.Add(() =>
                     {
                         action?.Invoke(io);
                     });
+#else
+                        action?.Invoke(io);
+#endif
                 });
             }
         }
@@ -105,10 +123,15 @@ namespace Zeloot.Tcp
             server?.Close();
             streamIOs.Clear();
 
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_WII || UNITY_ANDROID || UNITY_PS4 || UNITY_XBOXONE || UNITY_LUMIN || UNITY_TIZEN || UNITY_TVOS || UNITY_WEBGL || UNITY_ANALYTICS || UNITY_WINRT
+
             NetMainThread.Instance?.Add(() =>
             {
                 OnEvent?.Invoke("close");
             });
+#else
+                OnEvent?.Invoke("close");
+#endif
         }
     }
 }
