@@ -14,7 +14,7 @@ Using Zeloot.Tcp;
 using UnityEngine;
 using Zeloot.Tcp;
 
-public class TcpTest : MonoBehaviour
+public class Example : MonoBehaviour
 {
     private void Start()
     {
