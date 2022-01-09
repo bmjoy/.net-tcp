@@ -1,5 +1,5 @@
 # .net tcp
-### TCP connection library for .net & unity
+### TCP connection library for .net
 <br>
 
 > ## Version support
