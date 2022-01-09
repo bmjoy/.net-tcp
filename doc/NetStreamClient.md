@@ -7,13 +7,13 @@
 Using Zeloot.Tcp;
 ```
 
- ## `examples`
+## `examples`
 
 
- > ### Example 2
+> ### Example 1
+
+
 ````csharp
-
-
 using UnityEngine;
 using Zeloot.Tcp;
 
@@ -51,10 +51,14 @@ public class Example : MonoBehaviour
 
             stream.Close();
         });
-```
+    }
+}
+
+`````
 
 
- > ### Example 2
+> ### Example 2
+
 
 ```csharp
 using UnityEngine;
