@@ -30,6 +30,7 @@
 > ### Server
 > - [Doc NetTcpServer](doc/NetTcpServer.md)
 > - [Doc NetTcpServerAgent](doc/NetTcpServerAgent.md)
+> - [Doc NetStream](doc/NetStream.md)
 <br>
 
 > ## Examples
