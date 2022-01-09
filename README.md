@@ -1,5 +1,5 @@
 # .net tcp
-### TCP connection framework for .net
+### TCP connection library for .net
 <br>
 
 > ## Version support
