@@ -23,6 +23,7 @@
 
 > ### Geral
 > - [Doc NetTcpMain](doc/NetTcpMain.md)
+> - [Multiplayer game architecture](https://github.com/AlecioFuranze/.net-tcp-multiplayer-game)
 
 > ### Client
 > - [Doc NetTcpClient](doc/NetTcpClient.md)
